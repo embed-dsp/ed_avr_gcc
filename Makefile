@@ -24,12 +24,16 @@ J = 16
 SYSTEM = $(shell ./bin/get_system.sh)
 MACHINE = $(shell ./bin/get_machine.sh)
 
+# System configuration.
+GDB_CONFIGURE_FLAGS =
+
 # Compiler.
 CFLAGS = -Wall -O2
 CXXFLAGS = -Wall -O2
 
 # Linux system.
 ifeq ($(SYSTEM),linux)
+	# System configuration.
 	# Compiler.
 	CC = /usr/bin/gcc
 	CXX = /usr/bin/g++
@@ -39,6 +43,8 @@ endif
 
 # Cygwin system.
 ifeq ($(SYSTEM),cygwin)
+	# System configuration.
+	GDB_CONFIGURE_FLAGS += --disable-source-highlight
 	# Compiler.
 	CC = /usr/bin/gcc
 	CXX = /usr/bin/g++
@@ -59,6 +65,7 @@ endif
 # MSYS2/mingw64 system.
 ifeq ($(SYSTEM),mingw64)
 	# System configuration.
+	GDB_CONFIGURE_FLAGS += --disable-source-highlight
 	# Compiler.
 	CC = /mingw64/bin/gcc
 	CXX = /mingw64/bin/g++
@@ -215,7 +222,7 @@ prepare-gdb:
 .PHONY: configure-gdb
 configure-gdb:
 	-mkdir -p build/$(GDB_NAME)-obj
-	cd build/$(GDB_NAME)-obj && ../$(GDB_NAME)/configure CC=$(CC) CFLAGS="$(CFLAGS)" CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" --prefix=$(BUILD_PREFIX) --target=avr --with-static-standard-libraries
+	cd build/$(GDB_NAME)-obj && ../$(GDB_NAME)/configure CC=$(CC) CFLAGS="$(CFLAGS)" CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" --prefix=$(BUILD_PREFIX) --target=avr --with-static-standard-libraries $(GDB_CONFIGURE_FLAGS)
 
 
 .PHONY: compile-gdb
@@ -261,3 +268,42 @@ install-libc:
 	cp -a $(BUILD_PREFIX_LIBC)/avr/* $(BUILD_PREFIX)/avr
 	cp -a $(BUILD_PREFIX_LIBC)/bin/* $(BUILD_PREFIX)/bin
 	cp -a $(BUILD_PREFIX_LIBC)/share/* $(BUILD_PREFIX)/share
+
+
+# NOTES: mingw64
+#  CXXLD  gdb.exe
+#C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../lib/libncursesw.a(lib_termcap.o):(.bss+0x8): multiple definition of `UP'; ../readline/readline/libreadline.a(terminal.o):terminal.c:(.bss+0x98): first defined here
+#C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../lib/libncursesw.a(lib_termcap.o):(.bss+0x0): multiple definition of `BC'; ../readline/readline/libreadline.a(terminal.o):terminal.c:(.bss+0xa0): first defined here
+#C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../lib/libncursesw.a(lib_tputs.o):(.bss+0x6): multiple definition of `PC'; ../readline/readline/libreadline.a(terminal.o):terminal.c:(.bss+0xa8): first defined here
+#C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/10.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: ../gnulib/import/libgnu.a(getrandom.o):getrandom.c:(.text+0x21): undefined reference to `BCryptGenRandom'
+#collect2.exe: error: ld returned 1 exit status
+#make[3]: *** [Makefile:1866: gdb.exe] Error 1
+#make[3]: Leaving directory '/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gdb-10.1-obj/gdb'
+#make[2]: *** [Makefile:10078: all-gdb] Error 2
+#make[2]: Leaving directory '/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gdb-10.1-obj'
+#make[1]: *** [Makefile:866: all] Error 2
+#make[1]: Leaving directory '/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gdb-10.1-obj'
+#make: *** [Makefile:230: compile-gdb] Error 2
+
+# NOTES: cygwin64
+# GDB
+#  CXXLD  gdb.exe
+#cp-support.o:cp-support.c:(.text+0x1ec2): relocation truncated to fit: R_X86_64_PC32 against undefined symbol `TLS init function for thread_local_segv_handler'
+#cp-support.o:cp-support.c:(.text+0x1edb): relocation truncated to fit: R_X86_64_PC32 against undefined symbol `TLS init function for thread_local_segv_handler'
+#collect2: error: ld returned 1 exit status
+#make[3]: *** [Makefile:1866: gdb.exe] Error 1
+#make[3]: Leaving directory '/cygdrive/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gdb-10.1-obj/gdb'
+#make[2]: *** [Makefile:10069: all-gdb] Error 2
+#make[2]: Leaving directory '/cygdrive/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gdb-10.1-obj'
+#make[1]: *** [Makefile:857: all] Error 2
+#make[1]: Leaving directory '/cygdrive/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gdb-10.1-obj'
+#make: *** [Makefile:227: compile-gdb] Error 2
+
+# GCC
+#checking size of mp_limb_t... 0
+#configure: error: Oops, mp_limb_t doesn't seem to work
+#make[2]: *** [Makefile:4808: configure-gmp] Error 1
+#make[2]: Leaving directory '/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gcc-10.2.0-obj'
+#make[1]: *** [Makefile:959: all] Error 2
+#make[1]: Leaving directory '/c/Users/gb/workspaces/wrk_avr/ed_avr_gcc/build/gcc-10.2.0-obj'
+#make: *** [Makefile:194: compile-gcc] Error 2
