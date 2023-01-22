@@ -1,28 +1,7 @@
 
-# Copyright (c) 2018-2021 embed-dsp
-# All Rights Reserved
-
-# $Author:   Gudmundur Bogason <gb@embed-dsp.com> $
-# $Date:     $
-# $Revision: $
+# Copyright (c) 2021-2023 embed-dsp, All Rights Reserved.
+# Author: Gudmundur Bogason <gb@embed-dsp.com>
 
 # Directories
-build*/
-dist/
-install/
-work/
-tmp/
-__pycache__/
+build/
 src/
-
-# Backup files
-*~
-
-# Python bytecode files
-*.pyc
-
-# Object files
-*.o
-
-# Java class files
-*.class

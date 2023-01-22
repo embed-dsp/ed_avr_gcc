@@ -8,7 +8,6 @@ This **make** file can build the AVR-GCC toolchain on the following systems:
 * Windows
     * [MSYS2](https://www.msys2.org)/mingw64
     * [MSYS2](https://www.msys2.org)/mingw32
-    * **FIXME**: [Cygwin](https://www.cygwin.com)
 
 # Get Source Code
 
@@ -51,4 +50,9 @@ make clean
 # Similar Projects
 
 * https://blog.zakkemble.net/avr-gcc-builds
+
 * https://www.lumito.net/2020/11/02/released-avr-gcc-10-2-0
+* https://avr.lumito.net/downloads
+* https://gist.github.com/LumitoLuma/75eaa41b59700b88df1e872dffdfcdb9
+
+* https://www.microchip.com/en-us/tools-resources/develop/microchip-studio/gcc-compilers#

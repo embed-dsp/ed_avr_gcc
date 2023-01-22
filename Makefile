@@ -1,28 +1,62 @@
 
-# Copyright (c) 2021 embed-dsp
-# All Rights Reserved
-
-# $Author:   Gudmundur Bogason <gb@embed-dsp.com> $
-# $Date:     $
-# $Revision: $
+# Copyright (c) 2021-2023 embed-dsp, All Rights Reserved.
+# Author: Gudmundur Bogason <gb@embed-dsp.com>
 
 
-# Package.
 PACKAGE_NAME = avr-gcc
 
+# ==============================================================================
+
 # ...
-BINUTILS_NAME = binutils-2.35.1
-GCC_NAME = gcc-10.2.0
-GDB_NAME = gdb-10.1
+BINUTILS_NAME = binutils-2.38
+GCC_VERSION = 12.1.0
+GCC_NAME = gcc-$(GCC_VERSION)
+# FIXME: GDB 11 and newer needs libgmp
+GMP_NAME = gmp-6.2.1
+GDB_NAME = gdb-12.1
 LIBC_NAME = avr-libc3
 LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
 
+# BINUTILS_NAME = binutils-2.35.1
+# GCC_VERSION = 10.3.0
+# GCC_NAME = gcc-$(GCC_VERSION)
+# FIXME: GDB 11 and newer needs libgmp
+# GMP_NAME = gmp-6.2.0
+# GDB_NAME = gdb-10.1
+# LIBC_NAME = avr-libc3
+# LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
+
+# ==============================================================================
+
+# # System and Machine.
+# SYSTEM = $(shell ./bin/get_system.sh)
+# MACHINE = $(shell ./bin/get_machine.sh)
+
+# Determine system.
+SYSTEM = unknown
+ifeq ($(findstring Linux, $(shell uname -s)), Linux)
+	SYSTEM = linux
+endif
+ifeq ($(findstring MINGW32, $(shell uname -s)), MINGW32)
+	SYSTEM = mingw32
+endif
+ifeq ($(findstring MINGW64, $(shell uname -s)), MINGW64)
+	SYSTEM = mingw64
+endif
+ifeq ($(findstring CYGWIN, $(shell uname -s)), CYGWIN)
+	SYSTEM = cygwin
+endif
+
+# Determine machine.
+MACHINE = $(shell uname -m)
+
+# Architecture.
+ARCH = $(SYSTEM)_$(MACHINE)
+
+# ==============================================================================
+
 # Set number of simultaneous compile jobs.
 J = 16
-
-# System and Machine.
-SYSTEM = $(shell ./bin/get_system.sh)
-MACHINE = $(shell ./bin/get_machine.sh)
 
 # System configuration.
 GDB_CONFIGURE_FLAGS =
@@ -31,46 +65,48 @@ GDB_CONFIGURE_FLAGS =
 CFLAGS = -Wall -O2
 CXXFLAGS = -Wall -O2
 
-# Linux system.
+# Configuration for linux system.
 ifeq ($(SYSTEM),linux)
-	# System configuration.
 	# Compiler.
 	CC = /usr/bin/gcc
 	CXX = /usr/bin/g++
+
 	# Installation directory.
 	INSTALL_DIR = /opt
 endif
 
-# Cygwin system.
-ifeq ($(SYSTEM),cygwin)
-	# System configuration.
-	GDB_CONFIGURE_FLAGS += --disable-source-highlight
-	# Compiler.
-	CC = /usr/bin/gcc
-	CXX = /usr/bin/g++
-	# Installation directory.
-	INSTALL_DIR = /cygdrive/c/opt
-endif
-
-# MSYS2/mingw32 system.
+# Configuration for mingw32 system.
 ifeq ($(SYSTEM),mingw32)
-	# System configuration.
 	# Compiler.
 	CC = /mingw32/bin/gcc
 	CXX = /mingw32/bin/g++
+
 	# Installation directory.
 	INSTALL_DIR = /c/opt
 endif
 
-# MSYS2/mingw64 system.
+# Configuration for mingw64 system.
 ifeq ($(SYSTEM),mingw64)
-	# System configuration.
 	GDB_CONFIGURE_FLAGS += --disable-source-highlight
+
 	# Compiler.
 	CC = /mingw64/bin/gcc
 	CXX = /mingw64/bin/g++
+
 	# Installation directory.
 	INSTALL_DIR = /c/opt
+endif
+
+# Configuration for cygwin system.
+ifeq ($(SYSTEM),cygwin)
+	GDB_CONFIGURE_FLAGS += --disable-source-highlight
+
+	# Compiler.
+	CC = /usr/bin/gcc
+	CXX = /usr/bin/g++
+
+	# Installation directory.
+	INSTALL_DIR = /cygdrive/c/opt
 endif
 
 # Installation directory.
@@ -79,7 +115,7 @@ PREFIX = $(INSTALL_DIR)/$(PACKAGE_NAME)
 # ...
 BUILD_DIR = $(shell pwd)/build
 
-XXX = avr-$(GCC_NAME)-$(MACHINE)-$(SYSTEM)
+XXX = avr-gcc-$(GCC_VERSION)-$(MACHINE)-$(SYSTEM)
 
 BUILD_PREFIX = $(BUILD_DIR)/$(XXX)
 BUILD_PREFIX_LIBC = $(BUILD_DIR)/$(LIBC_NAME)-$(MACHINE)-$(SYSTEM)
@@ -88,14 +124,19 @@ BUILD_PREFIX_LIBC = $(BUILD_DIR)/$(LIBC_NAME)-$(MACHINE)-$(SYSTEM)
 PATH := $(BUILD_PREFIX)/bin:$(PATH)
 export PATH
 
+# ==============================================================================
 
 all:
 	@echo "PREFIX = $(PREFIX)"
-	@echo "BUILD_PREFIX = $(BUILD_PREFIX)"
-	@echo "BUILD_PREFIX_LIBC = $(BUILD_PREFIX_LIBC)"
+	@echo "XXX = $(XXX)"
+#	@echo "BUILD_PREFIX = $(BUILD_PREFIX)"
+#	@echo "BUILD_PREFIX_LIBC = $(BUILD_PREFIX_LIBC)"
 	@echo ""
 	@echo "## Get Source Code"
 	@echo "make download"
+	@echo ""
+	@echo "## Prepare"
+	@echo "make prepare"
 	@echo ""
 	@echo "## Build"
 	@echo "make build"
@@ -118,12 +159,18 @@ download:
 	cd src && wget https://ftp.gnu.org/gnu/binutils/$(BINUTILS_NAME).tar.xz
 	cd src && wget https://ftp.gnu.org/gnu/gcc/$(GCC_NAME)/$(GCC_NAME).tar.xz
 	cd src && wget https://ftp.gnu.org/gnu/gdb/$(GDB_NAME).tar.xz
+	cd src && wget https://ftp.gnu.org/gnu/gmp/$(GMP_NAME).tar.xz
 	cd src && git clone https://github.com/stevenj/$(LIBC_NAME).git $(LIBC_NAME)
 
 
 
+.PHONY: prepare
+prepare: prepare-binutils prepare-gcc prepare-gmp prepare-gdb prepare-libc
+
+
+
 .PHONY: build
-build: build-binutils build-gcc build-gdb build-libc
+build: build-binutils build-gcc build-gmp build-gdb build-libc
 
 
 
@@ -150,10 +197,6 @@ clean:
 # binutils
 # --------------------
 
-.PHONY: build-binutils
-build-binutils: prepare-binutils configure-binutils compile-binutils install-binutils
-
-
 .PHONY: prepare-binutils
 prepare-binutils:
 	-mkdir build
@@ -171,6 +214,10 @@ compile-binutils:
 	cd build/$(BINUTILS_NAME)-obj && make -j$(J)
 
 
+.PHONY: build-binutils
+build-binutils: configure-binutils compile-binutils install-binutils
+
+
 .PHONY: install-binutils
 install-binutils:
 	cd build/$(BINUTILS_NAME)-obj && make install-strip
@@ -178,10 +225,6 @@ install-binutils:
 # --------------------
 # gcc
 # --------------------
-
-.PHONY: build-gcc
-build-gcc: prepare-gcc configure-gcc compile-gcc install-gcc
-
 
 .PHONY: prepare-gcc
 prepare-gcc:
@@ -201,17 +244,46 @@ compile-gcc:
 	cd build/$(GCC_NAME)-obj && make -j$(J)
 
 
+.PHONY: build-gcc
+build-gcc: configure-gcc compile-gcc install-gcc
+
+
 .PHONY: install-gcc
 install-gcc:
 	cd build/$(GCC_NAME)-obj && make install-strip
 
 # --------------------
-# gdb
+# gmp
 # --------------------
 
-.PHONY: build-gdb
-build-gdb: prepare-gdb configure-gdb compile-gdb install-gdb
+.PHONY: prepare-gmp
+prepare-gmp:
+	-mkdir build
+	cd build && tar xf ../src/$(GMP_NAME).tar.xz
 
+
+.PHONY: configure-gmp
+configure-gmp:
+	-mkdir -p build/$(GMP_NAME)-obj
+	cd build/$(GMP_NAME)-obj && ../$(GMP_NAME)/configure CC=$(CC) CFLAGS="$(CFLAGS)" CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" --prefix=$(BUILD_PREFIX)
+
+
+.PHONY: compile-gmp
+compile-gmp:
+	cd build/$(GMP_NAME)-obj && make -j$(J)
+
+
+.PHONY: build-gmp
+build-gmp: configure-gmp compile-gmp install-gmp
+
+
+.PHONY: install-gmp
+install-gmp:
+	cd build/$(GMP_NAME)-obj && make install-strip
+
+# --------------------
+# gdb
+# --------------------
 
 .PHONY: prepare-gdb
 prepare-gdb:
@@ -230,18 +302,17 @@ compile-gdb:
 	cd build/$(GDB_NAME)-obj && make -j$(J)
 
 
+.PHONY: build-gdb
+build-gdb: configure-gdb compile-gdb install-gdb
+
+
 .PHONY: install-gdb
 install-gdb:
-	strip build/$(GDB_NAME)-obj/gdb/gdb
-	cd build/$(GDB_NAME)-obj && make install
+	cd build/$(GDB_NAME)-obj && make install-strip
 
 # --------------------
 # libc
 # --------------------
-
-.PHONY: build-libc
-build-libc: prepare-libc configure-libc compile-libc install-libc
-
 
 .PHONY: prepare-libc
 prepare-libc:
@@ -254,12 +325,17 @@ prepare-libc:
 .PHONY: configure-libc
 configure-libc:
 	-mkdir -p build/$(LIBC_NAME)-obj
-	cd build/$(LIBC_NAME)-obj && ../$(LIBC_NAME)/configure --prefix=$(BUILD_PREFIX_LIBC) --host=avr --build=`../$(LIBC_NAME)/config.guess`
+	cd build/$(LIBC_NAME)-obj && ../$(LIBC_NAME)/configure CC=$(BUILD_DIR)/$(XXX)/bin/avr-gcc CXX=$(BUILD_DIR)/$(XXX)/bin/avr-g++ --prefix=$(BUILD_PREFIX_LIBC) --host=avr --build=`../$(LIBC_NAME)/config.guess`
+	# cd build/$(LIBC_NAME)-obj && ../$(LIBC_NAME)/configure --prefix=$(BUILD_PREFIX_LIBC) --host=avr --build=`../$(LIBC_NAME)/config.guess`
 
 
 .PHONY: compile-libc
 compile-libc:
 	cd build/$(LIBC_NAME)-obj && make -j$(J)
+
+
+.PHONY: build-libc
+build-libc: configure-libc compile-libc install-libc
 
 
 .PHONY: install-libc
