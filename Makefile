@@ -28,10 +28,6 @@ LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
 
 # ==============================================================================
 
-# # System and Machine.
-# SYSTEM = $(shell ./bin/get_system.sh)
-# MACHINE = $(shell ./bin/get_machine.sh)
-
 # Determine system.
 SYSTEM = unknown
 ifeq ($(findstring Linux, $(shell uname -s)), Linux)
