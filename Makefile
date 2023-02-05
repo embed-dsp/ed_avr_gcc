@@ -7,16 +7,6 @@ PACKAGE_NAME = avr-gcc
 
 # ==============================================================================
 
-# ...
-BINUTILS_NAME = binutils-2.38
-GCC_VERSION = 12.1.0
-GCC_NAME = gcc-$(GCC_VERSION)
-# FIXME: GDB 11 and newer needs libgmp
-GMP_NAME = gmp-6.2.1
-GDB_NAME = gdb-12.1
-LIBC_NAME = avr-libc3
-LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
-
 # BINUTILS_NAME = binutils-2.35.1
 # GCC_VERSION = 10.3.0
 # GCC_NAME = gcc-$(GCC_VERSION)
@@ -25,6 +15,31 @@ LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
 # GDB_NAME = gdb-10.1
 # LIBC_NAME = avr-libc3
 # LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
+
+# ...
+# BINUTILS_NAME = binutils-2.38
+# GCC_VERSION = 12.1.0
+# GCC_NAME = gcc-$(GCC_VERSION)
+# # FIXME: GDB 11 and newer needs libgmp
+# GMP_NAME = gmp-6.2.1
+# GDB_NAME = gdb-12.1
+# LIBC_NAME = avr-libc3
+# LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
+
+# ...
+BINUTILS_NAME = binutils-2.40
+GCC_VERSION = 12.2.0
+GCC_NAME = gcc-$(GCC_VERSION)
+# FIXME: GDB 11 and newer needs libgmp
+# GMP_NAME = gmp-6.2.1
+GDB_NAME = gdb-12.1
+# https://github.com/stevenj/avr-libc3
+# LIBC_NAME = avr-libc3
+# LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
+# https://github.com/avrdudes/avr-libc
+LIBC_NAME = avr-libc
+LIBC_COMMIT = main
+# LIBC_COMMIT = avr-libc-2_1_0-release
 
 # ==============================================================================
 
@@ -123,6 +138,12 @@ export PATH
 # ==============================================================================
 
 all:
+	@echo "BINUTILS_NAME = $(BINUTILS_NAME)"
+	@echo "GCC_NAME      = $(GCC_NAME)"
+#	@echo "GMP_NAME      = $(GMP_NAME)"
+	@echo "GDB_NAME      = $(GDB_NAME)"
+	@echo "LIBC_NAME     = $(LIBC_NAME)"
+	@echo "LIBC_COMMIT   = $(LIBC_COMMIT)"
 	@echo "PREFIX = $(PREFIX)"
 	@echo "XXX = $(XXX)"
 #	@echo "BUILD_PREFIX = $(BUILD_PREFIX)"
@@ -152,21 +173,24 @@ all:
 .PHONY: download
 download:
 	-mkdir src
-	cd src && wget https://ftp.gnu.org/gnu/binutils/$(BINUTILS_NAME).tar.xz
-	cd src && wget https://ftp.gnu.org/gnu/gcc/$(GCC_NAME)/$(GCC_NAME).tar.xz
-	cd src && wget https://ftp.gnu.org/gnu/gdb/$(GDB_NAME).tar.xz
-	cd src && wget https://ftp.gnu.org/gnu/gmp/$(GMP_NAME).tar.xz
-	cd src && git clone https://github.com/stevenj/$(LIBC_NAME).git $(LIBC_NAME)
+	cd src && wget -nc https://ftp.gnu.org/gnu/binutils/$(BINUTILS_NAME).tar.xz
+	cd src && wget -nc https://ftp.gnu.org/gnu/gcc/$(GCC_NAME)/$(GCC_NAME).tar.xz
+	cd src && wget -nc https://ftp.gnu.org/gnu/gdb/$(GDB_NAME).tar.xz
+#	cd src && wget -nc https://ftp.gnu.org/gnu/gmp/$(GMP_NAME).tar.xz
+#	cd src && git clone https://github.com/stevenj/$(LIBC_NAME).git $(LIBC_NAME)
+	cd src && git clone https://github.com/avrdudes/$(LIBC_NAME).git $(LIBC_NAME)
 
 
 
 .PHONY: prepare
-prepare: prepare-binutils prepare-gcc prepare-gmp prepare-gdb prepare-libc
+prepare: prepare-binutils prepare-gcc prepare-gdb prepare-libc
+# prepare: prepare-binutils prepare-gcc prepare-gmp prepare-gdb prepare-libc
 
 
 
 .PHONY: build
-build: build-binutils build-gcc build-gmp build-gdb build-libc
+build: build-binutils build-gcc build-gdb build-libc
+# build: build-binutils build-gcc build-gmp build-gdb build-libc
 
 
 
@@ -210,13 +234,13 @@ compile-binutils:
 	cd build/$(BINUTILS_NAME)-obj && make -j$(J)
 
 
-.PHONY: build-binutils
-build-binutils: configure-binutils compile-binutils install-binutils
-
-
 .PHONY: install-binutils
 install-binutils:
 	cd build/$(BINUTILS_NAME)-obj && make install-strip
+
+
+.PHONY: build-binutils
+build-binutils: configure-binutils compile-binutils install-binutils
 
 # --------------------
 # gcc
@@ -240,42 +264,42 @@ compile-gcc:
 	cd build/$(GCC_NAME)-obj && make -j$(J)
 
 
-.PHONY: build-gcc
-build-gcc: configure-gcc compile-gcc install-gcc
-
-
 .PHONY: install-gcc
 install-gcc:
 	cd build/$(GCC_NAME)-obj && make install-strip
+
+
+.PHONY: build-gcc
+build-gcc: configure-gcc compile-gcc install-gcc
 
 # --------------------
 # gmp
 # --------------------
 
-.PHONY: prepare-gmp
-prepare-gmp:
-	-mkdir build
-	cd build && tar xf ../src/$(GMP_NAME).tar.xz
+# .PHONY: prepare-gmp
+# prepare-gmp:
+# 	-mkdir build
+# 	cd build && tar xf ../src/$(GMP_NAME).tar.xz
 
 
-.PHONY: configure-gmp
-configure-gmp:
-	-mkdir -p build/$(GMP_NAME)-obj
-	cd build/$(GMP_NAME)-obj && ../$(GMP_NAME)/configure CC=$(CC) CFLAGS="$(CFLAGS)" CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" --prefix=$(BUILD_PREFIX)
+# .PHONY: configure-gmp
+# configure-gmp:
+# 	-mkdir -p build/$(GMP_NAME)-obj
+# 	cd build/$(GMP_NAME)-obj && ../$(GMP_NAME)/configure CC=$(CC) CFLAGS="$(CFLAGS)" CXX=$(CXX) CXXFLAGS="$(CXXFLAGS)" --prefix=$(BUILD_PREFIX)
 
 
-.PHONY: compile-gmp
-compile-gmp:
-	cd build/$(GMP_NAME)-obj && make -j$(J)
+# .PHONY: compile-gmp
+# compile-gmp:
+# 	cd build/$(GMP_NAME)-obj && make -j$(J)
 
 
-.PHONY: build-gmp
-build-gmp: configure-gmp compile-gmp install-gmp
+# .PHONY: install-gmp
+# install-gmp:
+# 	cd build/$(GMP_NAME)-obj && make install-strip
 
 
-.PHONY: install-gmp
-install-gmp:
-	cd build/$(GMP_NAME)-obj && make install-strip
+# .PHONY: build-gmp
+# build-gmp: configure-gmp compile-gmp install-gmp
 
 # --------------------
 # gdb
@@ -298,13 +322,13 @@ compile-gdb:
 	cd build/$(GDB_NAME)-obj && make -j$(J)
 
 
-.PHONY: build-gdb
-build-gdb: configure-gdb compile-gdb install-gdb
-
-
 .PHONY: install-gdb
 install-gdb:
 	cd build/$(GDB_NAME)-obj && make install-strip
+
+
+.PHONY: build-gdb
+build-gdb: configure-gdb compile-gdb install-gdb
 
 # --------------------
 # libc
@@ -314,7 +338,9 @@ install-gdb:
 prepare-libc:
 	-mkdir build
 	cd build && cp -a ../src/$(LIBC_NAME) .
+	cd build/$(LIBC_NAME) && git restore .
 	cd build/$(LIBC_NAME) && git checkout $(LIBC_COMMIT)
+	cd build/$(LIBC_NAME) && chmod +x bootstrap
 	cd build/$(LIBC_NAME) && ./bootstrap
 
 
@@ -322,16 +348,11 @@ prepare-libc:
 configure-libc:
 	-mkdir -p build/$(LIBC_NAME)-obj
 	cd build/$(LIBC_NAME)-obj && ../$(LIBC_NAME)/configure CC=$(BUILD_DIR)/$(XXX)/bin/avr-gcc CXX=$(BUILD_DIR)/$(XXX)/bin/avr-g++ --prefix=$(BUILD_PREFIX_LIBC) --host=avr --build=`../$(LIBC_NAME)/config.guess`
-	# cd build/$(LIBC_NAME)-obj && ../$(LIBC_NAME)/configure --prefix=$(BUILD_PREFIX_LIBC) --host=avr --build=`../$(LIBC_NAME)/config.guess`
 
 
 .PHONY: compile-libc
 compile-libc:
 	cd build/$(LIBC_NAME)-obj && make -j$(J)
-
-
-.PHONY: build-libc
-build-libc: configure-libc compile-libc install-libc
 
 
 .PHONY: install-libc
@@ -340,6 +361,10 @@ install-libc:
 	cp -a $(BUILD_PREFIX_LIBC)/avr/* $(BUILD_PREFIX)/avr
 	cp -a $(BUILD_PREFIX_LIBC)/bin/* $(BUILD_PREFIX)/bin
 	cp -a $(BUILD_PREFIX_LIBC)/share/* $(BUILD_PREFIX)/share
+
+
+.PHONY: build-libc
+build-libc: configure-libc compile-libc install-libc
 
 
 # NOTES: mingw64
