@@ -41,6 +41,15 @@ LIBC_NAME = avr-libc
 LIBC_COMMIT = main
 # LIBC_COMMIT = avr-libc-2_1_0-release
 
+# ...
+BINUTILS_NAME = binutils-2.40
+GCC_VERSION = 13.1.0
+GCC_NAME = gcc-$(GCC_VERSION)
+GDB_NAME = gdb-13.1
+LIBC_NAME = avr-libc
+LIBC_COMMIT = main
+# LIBC_COMMIT = avr-libc-2_1_0-release
+
 # ==============================================================================
 
 # Determine system.
