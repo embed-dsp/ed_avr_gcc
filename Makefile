@@ -27,19 +27,19 @@ PACKAGE_NAME = avr-gcc
 # LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
 
 # ...
-BINUTILS_NAME = binutils-2.40
-GCC_VERSION = 12.2.0
-GCC_NAME = gcc-$(GCC_VERSION)
-# FIXME: GDB 11 and newer needs libgmp
-# GMP_NAME = gmp-6.2.1
-GDB_NAME = gdb-12.1
-# https://github.com/stevenj/avr-libc3
-# LIBC_NAME = avr-libc3
-# LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
-# https://github.com/avrdudes/avr-libc
-LIBC_NAME = avr-libc
-LIBC_COMMIT = main
-# LIBC_COMMIT = avr-libc-2_1_0-release
+# BINUTILS_NAME = binutils-2.40
+# GCC_VERSION = 12.2.0
+# GCC_NAME = gcc-$(GCC_VERSION)
+# # FIXME: GDB 11 and newer needs libgmp
+# # GMP_NAME = gmp-6.2.1
+# GDB_NAME = gdb-12.1
+# # https://github.com/stevenj/avr-libc3
+# # LIBC_NAME = avr-libc3
+# # LIBC_COMMIT = d09c2a61764aced3274b6dde4399e11b0aee4a87
+# # https://github.com/avrdudes/avr-libc
+# LIBC_NAME = avr-libc
+# LIBC_COMMIT = main
+# # LIBC_COMMIT = avr-libc-2_1_0-release
 
 # ...
 BINUTILS_NAME = binutils-2.40
