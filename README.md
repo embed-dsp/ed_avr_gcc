@@ -8,10 +8,10 @@ This **make** file can build the AVR-GCC toolchain on the following systems:
 
 This overall project consists of the following repositories:
 * [ed_avr_gcc](https://github.com/embed-dsp/ed_avr_gcc) - Makefile for building the AVR-GCC Toolchain from source (**NOTE:** Current repository).
-* [ed_avr_iss](https://github.com/embed-dsp/ed_avr_iss) - Instruction Set Simulator (ISS) for AVR Processors.
-* [ed_avr_core](https://github.com/embed-dsp/ed_avr_core) - Verilog implementation of an AVR Microprocessor Core.
-* [ed_avr_soc](https://github.com/embed-dsp/ed_avr_soc) - Verilog implementation of an AVR System-On-Chip Microcontroller.
-* [ed_avr_soc_fpga](https://github.com/embed-dsp/ed_avr_soc_fpga) - Verilog implementation of an AVR System-On-Chip Microcontroller in FPGA's.
+* [ed_avr_iss](https://github.com/embed-dsp/ed_avr_iss) - Instruction Set Simulator (ISS) for 8-bit AVR RISC Microprocessor.
+* [ed_avr_core](https://github.com/embed-dsp/ed_avr_core) - Verilog implementation of 8-bit AVR RISC Microprocessor.
+* [ed_avr_soc](https://github.com/embed-dsp/ed_avr_soc) - Verilog implementation of 8-bit AVR RISC System-On-Chip Microcontroller.
+* [ed_avr_soc_fpga](https://github.com/embed-dsp/ed_avr_soc_fpga) - Verilog implementation of 8-bit AVR RISC System-On-Chip Microcontroller in FPGA's.
 
 
 # Get Source Code
